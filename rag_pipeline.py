@@ -87,11 +87,20 @@ class WebsiteScribber():
         # Retrieve and generate using the relevant snippets of the blog.
         retriever = self.vectorstore.as_retriever()
 
-        rag_prompt_template = """You are an AI assistant specialising in information retrieval and analysis. Answer the following question based only on the given context:
+        rag_prompt_template = """You are an AI assistant specializing in information retrieval from websites. Your task is to carefully read the context provided and reason through the information step-by-step to answer the user's question as accurately as possible. Make sure to only use the context provided without adding any external information.
 
-Context: {context}
+Follow this process:
+1. First, summarize the overall content in the context.
+2. Identify key details relevant to the question.
+3. Based on those details, craft a precise and informative answer.
 
-Question: {question}"""
+Context:
+{context}
+
+Question:
+{question}
+
+Answer:"""
         prompt = PromptTemplate.from_template(rag_prompt_template)
 
         def format_docs(docs):
@@ -122,8 +131,8 @@ Question: {question}"""
     
 
 if __name__ == '__main__':
-    ws = WebsiteScribber('https://www.zestratech.com')
-    ws.train_on_website()
+    ws = WebsiteScribber()
+    ws.train_on_website('https://www.example.com')
 
-    resp = ws.ask_site_scribber("Do you provide mobile application development service? Which technology do you use for mobile apps?")
+    resp = ws.ask_site_scribber("Sample input query")
     print(resp)
