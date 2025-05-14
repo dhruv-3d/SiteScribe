@@ -5,7 +5,8 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 GEMINI_API_KEY = os.environ['GOOGLE_AI_API_KEY']
 
-llm = GoogleGenerativeAI(model="gemini-pro", google_api_key=GEMINI_API_KEY)
+
+llm = GoogleGenerativeAI(model="gemini-2.0-flash-lite", google_api_key=GEMINI_API_KEY)
 embeddings_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=GEMINI_API_KEY)
 
 # model_name = 'qwen2:1.5b-instruct'
