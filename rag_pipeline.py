@@ -15,8 +15,9 @@ from langchain_community.vectorstores import FAISS
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from langchain_community.document_loaders import WebBaseLoader
+from langchain_community.document_loaders.html_bs import BSHTMLLoader
 from langchain_community.document_transformers import MarkdownifyTransformer
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter, MarkdownTextSplitter
 
 from models import llm, embeddings_model
 
@@ -84,7 +85,7 @@ class WebsiteScribber():
         md = MarkdownifyTransformer(strip="a")
         converted_docs = md.transform_documents(docs)
 
-        print("Markdown docs: ",converted_docs[2])
+        # print("Markdown docs: ",converted_docs[2])
 
         print(f"Splitting page contents into smaller pieces for meaningful storage and retrieval...")
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=200)
@@ -100,6 +101,43 @@ class WebsiteScribber():
         print(f"Converting website contents into vectors and storing in vector DB.\nThis could take few minutes, please wait...")
         self.vectorstore = FAISS.from_documents(documents=docs_to_store, embedding=embeddings_model)
         print(f"Website content stored and ready for use!")
+
+
+    def build_cpe_store(self):
+
+        local_source_path = "local_data"
+        list_of_sources = []
+
+
+        # make a list of all files from the local directory which will be used for doing RAG
+        for file in os.listdir(local_source_path):
+            if file.endswith('.html'):
+                file_path = os.path.abspath(os.path.join(local_source_path, file))
+                list_of_sources.append(file_path)
+
+
+        all_docs = []
+        for src in list_of_sources:
+            src_loader = BSHTMLLoader(src)
+            docs = src_loader.load()
+            all_docs.append(docs)
+
+        md = MarkdownifyTransformer(strip=["a", "svg", "script"])
+        converted_docs = md.transform_documents(docs)
+
+        # print(len(converted_docs[0].page_content))
+
+        text_splitter = MarkdownTextSplitter()
+        splits = text_splitter.split_documents(converted_docs)
+
+        print(f"Converting website contents into vectors and storing in vector DB.\nThis could take few minutes, please wait...")
+        self.vectorstore = FAISS.from_documents(documents=splits, embedding=embeddings_model)
+        print(f"Website content stored and ready for use!")
+
+        # setup rag pipeline
+        self.website_url = "https://my-cpe.com"
+        self.setup_rag_pipeline()
+
 
     
     def setup_rag_pipeline(self):

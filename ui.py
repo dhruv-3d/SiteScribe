@@ -23,6 +23,7 @@ def main():
                 with st.spinner(f"Training on {website_url}..."):
                     try:
                         ws.train_on_website(website_url)
+                        # ws.build_cpe_store()
                         st.session_state['trained_url'] = website_url  # Store the trained URL
                         st.success(f"Successfully trained on: {website_url}")
                     except Exception as e:
